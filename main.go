@@ -74,6 +74,7 @@ func main() {
 	totalQuizAsked := 0
 	var userInput string
 
+	QuizLoop:
 	for _, quiz := range(quizList) {
 		fmt.Printf("%v :", quiz.question)
 		answerCh := make(chan string)
@@ -83,7 +84,7 @@ func main() {
 		}()
 		select {
 		case <-timeOutQuiz.C:
-			return
+			break QuizLoop
 		case solution := <- answerCh:
 			totalQuizAsked++
 			if solution == quiz.answer {
@@ -94,5 +95,5 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("Correct answers: %v, Total quizs attempted %v", correctAnswers, totalQuizAsked)
+	fmt.Printf("\nCorrect answers: %v, Total quizs attempted %v\n", correctAnswers, totalQuizAsked)
 }
