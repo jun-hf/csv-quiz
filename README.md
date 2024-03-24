@@ -41,3 +41,8 @@ Format of CSV:
 
 Edge case:
 `"what 2+2, sir?",4`
+
+
+[^1]:
+
+Exercise from: https://github.com/gophercises/quiz
