@@ -9,12 +9,10 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 func checkValidCSVFile(csvFileName string) (string, error) {
-	if csvFileName == "" {
-		return "", errors.New("Please provide file a csv file path usage:file=<csv file path>")
-	}
 	if !strings.HasSuffix(csvFileName, ".csv") {
 		return "", errors.New("file is not a CSV file")
 	}
@@ -23,38 +21,6 @@ func checkValidCSVFile(csvFileName string) (string, error) {
 	}
 
 	return csvFileName, nil
-}
-
-func main() {
-	csvFilePath := flag.String("file", "", "A filePath")
-	flag.Parse()
-	csvFile, err := checkValidCSVFile(*csvFilePath)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(2)
-	}
-	quizList, err := parseCsvFile(csvFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Starting the Game 🔥🔥🔥: ")
-	correctAnswers := 0
-	totalQuizAsked := 0
-	var userInput string
-
-	for _, quiz := range(quizList) {
-		fmt.Printf("%v :", quiz.question)
-		totalQuizAsked++
-		fmt.Scanln(&userInput)
-		solution := strings.TrimSpace(userInput)
-		if solution == quiz.answer {
-			correctAnswers++
-			fmt.Println("Correct!!")
-		} else {
-			fmt.Printf("Wrong!! the answer is %v \n", quiz.answer)
-		}
-	}
 }
 
 type Quiz struct {
@@ -85,4 +51,48 @@ func parseCsvFile(fileName string) ([]Quiz, error){
 	}
 
 	return result, nil
+}
+
+func main() {
+	csvFilePath := flag.String("file", "problems.csv", "A csv filePath")
+	quizDuration := flag.Int("seconds", 100, "Time limit on the quiz")
+	flag.Parse()
+	csvFile, err := checkValidCSVFile(*csvFilePath)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(2)
+	}
+	
+	quizList, err := parseCsvFile(csvFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	timeOutQuiz := time.NewTimer(time.Duration(*quizDuration) * time.Second)
+
+	fmt.Println("Starting the Game 🔥🔥🔥: ")
+	correctAnswers := 0
+	totalQuizAsked := 0
+	var userInput string
+
+	for _, quiz := range(quizList) {
+		fmt.Printf("%v :", quiz.question)
+		answerCh := make(chan string)
+		go func() {
+			fmt.Scan(&userInput)
+			answerCh <- strings.TrimSpace(userInput)
+		}()
+		select {
+		case <-timeOutQuiz.C:
+			return
+		case solution := <- answerCh:
+			totalQuizAsked++
+			if solution == quiz.answer {
+				correctAnswers++
+				fmt.Println("Correct!!")
+			} else {
+				fmt.Printf("Wrong!! the answer is %v \n", quiz.answer)
+			}
+		}
+	}
+	fmt.Printf("Correct answers: %v, Total quizs attempted %v", correctAnswers, totalQuizAsked)
 }
