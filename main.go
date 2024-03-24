@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -10,14 +11,10 @@ import (
 	"strings"
 )
 
-func boundCheck(i int, arr []string) bool {
-	if i >= len(arr) {
-		return false
-	}
-	return true
-}
-
 func checkValidCSVFile(csvFileName string) (string, error) {
+	if csvFileName == "" {
+		return "", errors.New("Please provide file a csv file path usage:file=<csv file path>")
+	}
 	if !strings.HasSuffix(csvFileName, ".csv") {
 		return "", errors.New("file is not a CSV file")
 	}
@@ -29,27 +26,14 @@ func checkValidCSVFile(csvFileName string) (string, error) {
 }
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Fatal(errors.New("Please provide csv file name. usage: -f <fileName.csv>"))
+	csvFilePath := flag.String("file", "", "A filePath")
+	flag.Parse()
+	csvFile, err := checkValidCSVFile(*csvFilePath)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(2)
 	}
-
-	var csvFilePath string
-	progArgs := os.Args[1:]
-	for i := 0; i < len(progArgs); i++ {
-		switch progArgs[i] {
-		case "-f":
-			if !boundCheck(i+1, progArgs) {
-				log.Fatal(errors.New("Please provide csv file name. usage: -f <fileName.csv>"))
-			}
-			fileName, err := checkValidCSVFile(progArgs[i+1])
-			if err != nil {
-				log.Fatal(err)
-			}
-			csvFilePath = fileName
-		}
-	}
-	// csvFilePath := "problems.csv"
-	quizList, err := parseCsvFile(csvFilePath)
+	quizList, err := parseCsvFile(csvFile)
 	if err != nil {
 		log.Fatal(err)
 	}
