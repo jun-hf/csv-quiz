@@ -5,6 +5,17 @@ Goals:
 - The tool will ask you the quiz
 - Keep track of the questions corrected
 
+Get Started:
+- `git clone` this repo
+- Run `go run main.go`
+- Start answering the quiz
+- `go run main.go -help` to look flags
+
+Usage:
+- `go run main.go -help`
+- ![image](https://github.com/jun-hf/csv-quiz/assets/86782267/cbcfde9d-4cef-4771-aa05-2b49b050426d)
+
+
 Actions:
 - No csv provided will be default to a problems.csv
 - Allow users need to provide how long does the quiz should last
